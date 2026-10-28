@@ -1,138 +1,192 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
-<title>Space Defender — Arcade Neon</title>
-<meta name="description" content="Space Defender: jogo arcade espacial neon com ondas, chefes, power-ups e recordes." />
-<link rel="stylesheet" href="./style.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Space Defender</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<div id="app">
-  <canvas id="game"></canvas>
+  <div id="game-container">
+    <canvas id="gameCanvas"></canvas>
 
-  <!-- HUD -->
-  <div id="hud" class="hidden">
-    <div class="hud-row">
-      <div class="hud-box"><span class="lbl">PONTOS</span><span id="hud-score">0</span></div>
-      <div class="hud-box"><span class="lbl">NÍVEL</span><span id="hud-level">1</span></div>
-      <div class="hud-box"><span class="lbl">ONDA</span><span id="hud-wave">1/3</span></div>
-      <div class="hud-box"><span class="lbl">RECORDE</span><span id="hud-best">0</span></div>
-      <button id="btn-pause" class="icon-btn" aria-label="Pausar">II</button>
+    <!-- HUD -->
+    <div id="hud" class="screen-overlay hidden">
+      <div class="hud-top">
+        <div class="hud-left">
+          <div class="hud-item">
+            <span class="hud-label">VIDAS</span>
+            <div id="lives-container" class="hearts"></div>
+          </div>
+          <div class="hud-item hp-bar-wrapper">
+            <div class="hp-bar-bg">
+              <div id="hp-bar-fill" class="hp-bar-fill"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="hud-center">
+          <div class="hud-item">
+            <span class="hud-label">NÍVEL</span>
+            <span id="level-display" class="hud-value neon-cyan">1</span>
+          </div>
+          <div id="boss-hud" class="boss-hud hidden">
+            <span class="boss-label">⚠️ CHEFÃO ⚠️</span>
+            <div class="boss-hp-bg">
+              <div id="boss-hp-fill" class="boss-hp-fill"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="hud-right">
+          <div class="hud-item">
+            <span class="hud-label">PONTOS</span>
+            <span id="score-display" class="hud-value neon-pink">0</span>
+          </div>
+          <button id="btn-pause" class="btn-icon" aria-label="Pausar">⏸</button>
+        </div>
+      </div>
+      <div id="active-powerups" class="active-powerups"></div>
     </div>
-    <div class="hud-row bars">
-      <div class="bar-wrap"><span class="lbl">CASCO</span><div class="bar"><i id="bar-hp"></i></div></div>
-      <div class="lives" id="hud-lives"></div>
-      <div class="powers" id="hud-powers"></div>
+
+    <!-- MENU PRINCIPAL -->
+    <div id="menu-screen" class="modal-screen">
+      <div class="modal-card">
+        <h1 class="game-title neon-glow">SPACE<br><span>DEFENDER</span></h1>
+        <p class="tagline">Defenda a galáxia!</p>
+        <div class="menu-buttons">
+          <button id="btn-play" class="btn btn-primary">JOGAR</button>
+          <button id="btn-how" class="btn btn-secondary">COMO JOGAR</button>
+          <button id="btn-scores" class="btn btn-secondary">RECORDES</button>
+          <button id="btn-settings" class="btn btn-secondary">CONFIGURAÇÕES</button>
+        </div>
+      </div>
     </div>
-    <div id="boss-bar-wrap" class="hidden">
-      <span class="lbl">CHEFE</span><div class="bar boss"><i id="bar-boss"></i></div>
+
+    <!-- COMO JOGAR -->
+    <div id="how-screen" class="modal-screen hidden">
+      <div class="modal-card">
+        <h2 class="section-title">COMO JOGAR</h2>
+        <div class="modal-body text-left">
+          <p><strong>PC:</strong> Use <code>W A S D</code> ou as <code>Setas</code> para mover. Pressione <code>Espaço</code> para atirar. <code>P</code> ou <code>Esc</code> para pausar.</p>
+          <p><strong>Mobile:</strong> Use o direcional analógico no canto esquerdo e toque no botão <code>TIRO</code> à direita.</p>
+          <p><strong>Objetivo:</strong> Destrua as naves inimigas antes que alcancem o fundo da tela. A cada 5 níveis um Chefe imenso aparece!</p>
+          <p><strong>Power-ups:</strong></p>
+          <ul class="powerup-list">
+            <li><span class="p-icon p-life">❤️</span> Vida extra</li>
+            <li><span class="p-icon p-double">⚡</span> Tiro Duplo</li>
+            <li><span class="p-icon p-triple">💥</span> Tiro Triplo</li>
+            <li><span class="p-icon p-shield">🛡️</span> Escudo de energia</li>
+            <li><span class="p-icon p-speed">⏩</span> Super Velocidade</li>
+          </ul>
+        </div>
+        <button id="btn-how-back" class="btn btn-secondary">VOLTAR</button>
+      </div>
+    </div>
+
+    <!-- RECORDES -->
+    <div id="scores-screen" class="modal-screen hidden">
+      <div class="modal-card">
+        <h2 class="section-title">RECORDES</h2>
+        <div class="modal-body">
+          <div class="high-score-box">
+            <span class="hs-label">MAIOR PONTUAÇÃO</span>
+            <span id="best-score-display" class="hs-value neon-pink">0</span>
+          </div>
+          <div class="high-score-box">
+            <span class="hs-label">MAIOR NÍVEL ALCANÇADO</span>
+            <span id="best-level-display" class="hs-value neon-cyan">1</span>
+          </div>
+        </div>
+        <button id="btn-scores-back" class="btn btn-secondary">VOLTAR</button>
+      </div>
+    </div>
+
+    <!-- CONFIGURAÇÕES -->
+    <div id="settings-screen" class="modal-screen hidden">
+      <div class="modal-card">
+        <h2 class="section-title">CONFIGURAÇÕES</h2>
+        <div class="modal-body settings-grid">
+          <label class="setting-row">
+            <span>Efeitos Sonoros</span>
+            <input type="checkbox" id="setting-sfx" checked>
+          </label>
+          <label class="setting-row">
+            <span>Música de Fundo</span>
+            <input type="checkbox" id="setting-music" checked>
+          </label>
+          <label class="setting-row">
+            <span>Efeito de Partículas</span>
+            <input type="checkbox" id="setting-particles" checked>
+          </label>
+          <label class="setting-row">
+            <span>Dificuldade</span>
+            <select id="setting-difficulty">
+              <option value="easy">Fácil</option>
+              <option value="normal" selected>Normal</option>
+              <option value="hard">Difícil</option>
+            </select>
+          </label>
+        </div>
+        <button id="btn-settings-back" class="btn btn-secondary">SALVAR E VOLTAR</button>
+      </div>
+    </div>
+
+    <!-- PAUSA -->
+    <div id="pause-screen" class="modal-screen hidden">
+      <div class="modal-card">
+        <h2 class="section-title neon-cyan">JOGO PAUSADO</h2>
+        <div class="menu-buttons">
+          <button id="btn-resume" class="btn btn-primary">CONTINUAR</button>
+          <button id="btn-restart-pause" class="btn btn-secondary">REINICIAR</button>
+          <button id="btn-menu-pause" class="btn btn-secondary">MENU PRINCIPAL</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- GAME OVER -->
+    <div id="gameover-screen" class="modal-screen hidden">
+      <div class="modal-card">
+        <h2 class="section-title neon-red">GAME OVER</h2>
+        <div id="new-record-badge" class="badge-record hidden">🏆 NOVO RECORDE!</div>
+        <div class="gameover-stats">
+          <p>Pontuação: <strong id="final-score" class="neon-pink">0</strong></p>
+          <p>Nível alcançado: <strong id="final-level" class="neon-cyan">1</strong></p>
+          <p>Recorde atual: <strong id="final-record">0</strong></p>
+        </div>
+        <div class="menu-buttons">
+          <button id="btn-retry" class="btn btn-primary">JOGAR NOVAMENTE</button>
+          <button id="btn-menu-over" class="btn btn-secondary">MENU PRINCIPAL</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- VITÓRIA -->
+    <div id="victory-screen" class="modal-screen hidden">
+      <div class="modal-card">
+        <h2 class="section-title neon-cyan">VITÓRIA!</h2>
+        <p class="tagline">Você protegeu a galáxia com sucesso!</p>
+        <div class="gameover-stats">
+          <p>Pontuação Final: <strong id="victory-score" class="neon-pink">0</strong></p>
+        </div>
+        <div class="menu-buttons">
+          <button id="btn-victory-again" class="btn btn-primary">JOGAR NOVAMENTE</button>
+          <button id="btn-victory-menu" class="btn btn-secondary">MENU PRINCIPAL</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONTROLES MOBILE -->
+    <div id="mobile-controls" class="hidden">
+      <div id="joystick-zone">
+        <div id="joystick-base">
+          <div id="joystick-stick"></div>
+        </div>
+      </div>
+      <button id="btn-mobile-fire" class="fire-button">TIRO</button>
     </div>
   </div>
 
-  <!-- Controles mobile -->
-  <div id="touch" class="hidden">
-    <div id="stick"><i></i></div>
-    <button id="fire-btn">FOGO</button>
-  </div>
-
-  <!-- MENU -->
-  <section id="menu" class="screen">
-    <h1 class="logo">SPACE<span>DEFENDER</span></h1>
-    <p class="tagline">Defenda a órbita. Sobreviva às ondas. Derrote os chefes.</p>
-    <div class="menu-btns">
-      <button class="btn primary" data-act="play">JOGAR</button>
-      <button class="btn" data-act="how">INSTRUÇÕES</button>
-      <button class="btn" data-act="scores">RECORDES</button>
-      <button class="btn" data-act="settings">CONFIGURAÇÕES</button>
-    </div>
-    <p class="foot">Feito com HTML5 Canvas · Web Audio API</p>
-  </section>
-
-  <!-- INSTRUÇÕES -->
-  <section id="how" class="screen hidden">
-    <h2>INSTRUÇÕES</h2>
-    <div class="panel">
-      <p><b>Mover:</b> setas / WASD · no celular use o direcional na tela.</p>
-      <p><b>Atirar:</b> Espaço ou botão FOGO (segure para tiro contínuo).</p>
-      <p><b>Pausar:</b> P ou ESC.</p>
-      <hr />
-      <p><b class="c1">Inimigo comum</b> — lento e previsível.</p>
-      <p><b class="c2">Rápido</b> — mergulha em zigue-zague.</p>
-      <p><b class="c3">Resistente</b> — blindado, exige vários tiros.</p>
-      <p><b class="c4">Atirador</b> — dispara plasma à distância.</p>
-      <p><b class="c5">Chefe</b> — surge a cada 5 níveis com padrões de tiro.</p>
-      <hr />
-      <p><b>Power-ups:</b> <span class="c6">S</span> tiro duplo/triplo · <span class="c7">E</span> escudo · <span class="c8">V</span> velocidade · <span class="c9">+</span> vida · <span class="ca">B</span> bomba.</p>
-      <p>Complete todas as ondas do nível 15 para vencer o jogo.</p>
-    </div>
-    <button class="btn back">VOLTAR</button>
-  </section>
-
-  <!-- RECORDES -->
-  <section id="scores" class="screen hidden">
-    <h2>RECORDES</h2>
-    <div class="panel"><ol id="score-list"></ol></div>
-    <div class="menu-btns row">
-      <button class="btn danger" id="clear-scores">LIMPAR</button>
-      <button class="btn back">VOLTAR</button>
-    </div>
-  </section>
-
-  <!-- CONFIGURAÇÕES -->
-  <section id="settings" class="screen hidden">
-    <h2>CONFIGURAÇÕES</h2>
-    <div class="panel">
-      <label class="row-set"><span>Música</span><input type="checkbox" id="set-music" /></label>
-      <label class="row-set"><span>Efeitos sonoros</span><input type="checkbox" id="set-sfx" /></label>
-      <label class="row-set"><span>Volume</span><input type="range" id="set-vol" min="0" max="100" /></label>
-      <label class="row-set"><span>Dificuldade</span>
-        <select id="set-diff">
-          <option value="easy">Fácil</option>
-          <option value="normal">Normal</option>
-          <option value="hard">Difícil</option>
-        </select>
-      </label>
-      <label class="row-set"><span>Partículas</span><input type="checkbox" id="set-particles" /></label>
-      <label class="row-set"><span>Controles na tela</span>
-        <select id="set-touch">
-          <option value="auto">Automático</option>
-          <option value="on">Sempre</option>
-          <option value="off">Nunca</option>
-        </select>
-      </label>
-    </div>
-    <button class="btn back">VOLTAR</button>
-  </section>
-
-  <!-- PAUSA -->
-  <section id="pause" class="screen hidden overlay">
-    <h2>PAUSADO</h2>
-    <div class="menu-btns">
-      <button class="btn primary" id="resume">CONTINUAR</button>
-      <button class="btn" id="restart">REINICIAR</button>
-      <button class="btn" id="to-menu">MENU</button>
-    </div>
-  </section>
-
-  <!-- GAME OVER / VITÓRIA -->
-  <section id="over" class="screen hidden overlay">
-    <h2 id="over-title">FIM DE JOGO</h2>
-    <p id="over-sub" class="tagline"></p>
-    <div class="panel small">
-      <p>Pontuação: <b id="over-score">0</b></p>
-      <p>Nível alcançado: <b id="over-level">1</b></p>
-      <p>Inimigos destruídos: <b id="over-kills">0</b></p>
-      <p id="over-new" class="hidden neon-new">NOVO RECORDE!</p>
-    </div>
-    <div class="menu-btns row">
-      <button class="btn primary" id="again">JOGAR NOVAMENTE</button>
-      <button class="btn" id="over-menu">MENU</button>
-    </div>
-  </section>
-
-  <div id="toast"></div>
-</div>
-<script src="./script.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>
